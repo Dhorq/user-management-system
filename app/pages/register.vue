@@ -1,14 +1,24 @@
 <script setup lang="ts">
 import * as z from "zod";
 import type { FormSubmitEvent, AuthFormField } from "@nuxt/ui";
+import { useAuth } from "~/composables/useAuth";
 
 const toast = useToast();
+const authClient = useAuth();
+const router = useRouter();
 
 definePageMeta({
   layout: "auth",
 });
 
 const fields: AuthFormField[] = [
+  {
+    name: "name",
+    type: "text",
+    label: "Name",
+    placeholder: "Enter your name",
+    required: true,
+  },
   {
     name: "email",
     type: "email",
@@ -23,56 +33,103 @@ const fields: AuthFormField[] = [
     placeholder: "Enter your password",
     required: true,
   },
-  {
-    name: "remember",
-    label: "Remember me",
-    type: "checkbox",
-  },
 ];
 
 const providers = [
   {
     label: "Google",
     icon: "i-simple-icons-google",
-    onClick: () => {
-      toast.add({ title: "Google", description: "Login with Google" });
+    onClick: async () => {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
     },
   },
   {
     label: "GitHub",
     icon: "i-simple-icons-github",
-    onClick: () => {
-      toast.add({ title: "GitHub", description: "Login with GitHub" });
+    onClick: async () => {
+      await authClient.signIn.social({
+        provider: "github",
+        callbackURL: "/dashboard",
+      });
     },
   },
 ];
 
 const schema = z.object({
-  email: z.email("Invalid email"),
-  password: z
-    .string("Password is required")
-    .min(8, "Must be at least 8 characters"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(8, "Must be at least 8 characters"),
 });
 
 type Schema = z.output<typeof schema>;
 
-function onSubmit(payload: FormSubmitEvent<Schema>) {
-  console.log("Submitted", payload);
+const loading = ref(false);
+
+async function onSubmit(payload: FormSubmitEvent<Schema>) {
+  loading.value = true;
+
+  try {
+    const result = await authClient.signUp.email({
+      email: payload.data.email,
+      password: payload.data.password,
+      name: payload.data.name,
+    });
+
+    if (result.error) {
+      toast.add({
+        title: "Error",
+        description: result.error.message,
+        color: "neutral",
+      });
+      return;
+    }
+
+    toast.add({
+      title: "Success",
+      description: "Account created successfully!",
+      color: "neutral",
+    });
+
+    router.push("/dashboard");
+  } catch (error: any) {
+    toast.add({
+      title: "Error",
+      description: error.message || "Failed to register",
+      color: "neutral",
+    });
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center gap-4 p-4 h-screen">
-    <UPageCard class="w-full max-w-md">
-      <UAuthForm
-        :schema="schema"
-        title="Register"
-        description="Enter your credentials to access your account."
-        icon="i-lucide-user"
-        :fields="fields"
-        :providers="providers"
-        @submit="onSubmit"
-      />
-    </UPageCard>
-  </div>
+  <ClientOnly>
+    <div class="flex flex-col items-center justify-center gap-4 p-4 h-screen">
+      <UPageCard class="w-full max-w-md">
+        <UAuthForm
+          :schema="schema"
+          title="Register"
+          description="Create your account to get started."
+          icon="i-lucide-user-plus"
+          :fields="fields"
+          :providers="providers"
+          :loading="loading"
+          @submit="onSubmit"
+        >
+          <template #footer>
+            <div class="text-center text-sm">
+              Already have an account?
+              <NuxtLink to="/login" class="text-primary hover:underline">
+                Sign in
+              </NuxtLink>
+            </div>
+          </template>
+        </UAuthForm>
+      </UPageCard>
+    </div>
+  </ClientOnly>
 </template>
