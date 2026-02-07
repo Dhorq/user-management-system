@@ -304,7 +304,7 @@ function toggleSelectAll() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 w-full">
+  <div class="min-h-screen w-full">
     <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
       <div class="mb-8">
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
@@ -317,10 +317,8 @@ function toggleSelectAll() {
           <span>User management</span>
         </div>
 
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">User management</h1>
-        <p class="text-gray-600">
-          Manage your team members and their account permissions here.
-        </p>
+        <h1 class="text-3xl font-bold mb-2">User management</h1>
+        <p>Manage your team members and their account permissions here.</p>
       </div>
 
       <UCard class="shadow-sm w-full">
@@ -329,7 +327,7 @@ function toggleSelectAll() {
             class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
             <div class="flex items-center gap-2">
-              <h2 class="text-lg font-semibold text-gray-900">All users</h2>
+              <h2 class="text-lg font-semibold">All users</h2>
               <UBadge color="neutral" variant="subtle" size="md">
                 {{ filteredUsers.length }}
               </UBadge>
@@ -363,9 +361,9 @@ function toggleSelectAll() {
         </template>
 
         <div class="overflow-x-auto w-full">
-          <table class="w-full divide-y divide-gray-200">
+          <table class="w-full divide-y">
             <thead>
-              <tr class="bg-gray-50">
+              <tr>
                 <th class="px-6 py-3 text-left w-12">
                   <UCheckbox
                     :model-value="isAllSelected"
@@ -373,35 +371,35 @@ function toggleSelectAll() {
                   />
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 >
                   User name
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 >
                   Access
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 >
                   Last active
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 >
                   Date added
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"
+                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider w-12"
                 ></th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody>
               <tr
                 v-for="user in paginatedUsers"
                 :key="user.id"
-                class="hover:bg-gray-50 transition-colors"
+                class="transition-colors"
               >
                 <td class="px-6 py-4 whitespace-nowrap">
                   <UCheckbox
@@ -413,10 +411,10 @@ function toggleSelectAll() {
                   <div class="flex items-center gap-3">
                     <UAvatar :src="user.avatar" :alt="user.name" size="sm" />
                     <div>
-                      <div class="font-medium text-gray-900">
+                      <div class="font-medium">
                         {{ user.name }}
                       </div>
-                      <div class="text-sm text-gray-500">{{ user.email }}</div>
+                      <div class="text-sm">{{ user.email }}</div>
                     </div>
                   </div>
                 </td>
@@ -434,14 +432,10 @@ function toggleSelectAll() {
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-900">{{
-                    user.lastActive
-                  }}</span>
+                  <span class="text-sm">{{ user.lastActive }}</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-500">{{
-                    user.dateAdded
-                  }}</span>
+                  <span class="text-sm">{{ user.dateAdded }}</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
                   <UDropdown :items="getActions(user)">
