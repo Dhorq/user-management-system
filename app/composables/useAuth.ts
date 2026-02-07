@@ -4,8 +4,20 @@ export const authClient = createAuthClient({
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
 });
 
+type UserRole = "ADMIN" | "MANAGER" | "USER";
+
+interface UserWithRole {
+  id: string;
+  email: string;
+  name: string;
+  role?: UserRole;
+  image?: string | null;
+  emailVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export const useAuth = () => {
-  const router = useRouter();
   const toast = useToast();
 
   const signUpEmail = async (data: {
@@ -15,9 +27,7 @@ export const useAuth = () => {
   }) => {
     try {
       const result = await authClient.signUp.email({
-        email: data.email,
-        password: data.password,
-        name: data.name,
+        ...data,
         callbackURL: "/",
       });
 
@@ -50,8 +60,7 @@ export const useAuth = () => {
   const signInEmail = async (data: { email: string; password: string }) => {
     try {
       const result = await authClient.signIn.email({
-        email: data.email,
-        password: data.password,
+        ...data,
         callbackURL: "/",
       });
 
@@ -127,14 +136,34 @@ export const useAuth = () => {
 
   const session = authClient.useSession();
 
+  const user = computed(
+    () => session.value.data?.user as UserWithRole | undefined,
+  );
+
+  const isAdmin = computed(() => user.value?.role === "ADMIN");
+  const isManager = computed(() => user.value?.role === "MANAGER");
+  const isUser = computed(() => user.value?.role === "USER");
+
+  const hasRole = (role: UserRole) => {
+    return user.value?.role === role;
+  };
+
+  const hasAnyRole = (roles: UserRole[]) => {
+    return roles.includes(user.value?.role as UserRole);
+  };
+
   return {
     signUpEmail,
     signInEmail,
     signInSocial,
     logout,
-
     session,
-
+    user,
+    isAdmin,
+    isManager,
+    isUser,
+    hasRole,
+    hasAnyRole,
     authClient,
   };
 };
