@@ -4,6 +4,7 @@ import type { DropdownMenuItem } from "#ui/types";
 definePageMeta({
   layout: "default",
   ssr: false,
+  middleware: "auth",
 });
 
 interface User {
@@ -304,193 +305,198 @@ function toggleSelectAll() {
 </script>
 
 <template>
-  <div class="min-h-screen w-full">
-    <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
-      <div class="mb-8">
-        <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <UIcon
-            name="i-heroicons-building-storefront-20-solid"
-            class="w-5 h-5"
-          />
-          <span class="font-medium">KemenPU</span>
-          <UIcon name="i-heroicons-chevron-right-20-solid" class="w-4 h-4" />
-          <span>User management</span>
-        </div>
-
-        <h1 class="text-3xl font-bold mb-2">User management</h1>
-        <p>Manage your team members and their account permissions here.</p>
-      </div>
-
-      <UCard class="shadow-sm w-full">
-        <template #header>
-          <div
-            class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-          >
-            <div class="flex items-center gap-2">
-              <h2 class="text-lg font-semibold">All users</h2>
-              <UBadge color="neutral" variant="subtle" size="md">
-                {{ filteredUsers.length }}
-              </UBadge>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <UInput
-                v-model="searchQuery"
-                icon="i-heroicons-magnifying-glass-20-solid"
-                placeholder="Search"
-                class="w-full sm:w-80"
-                color="neutral"
-              />
-              <UButton
-                icon="i-heroicons-funnel-20-solid"
-                color="neutral"
-                variant="outline"
-              >
-                Filters
-              </UButton>
-              <UButton
-                icon="i-heroicons-plus-20-solid"
-                color="primary"
-                class="w-full sm:w-80"
-                @click="addUser"
-              >
-                Add user
-              </UButton>
-            </div>
-          </div>
-        </template>
-
-        <div class="overflow-x-auto w-full">
-          <table class="w-full divide-y">
-            <thead>
-              <tr>
-                <th class="px-6 py-3 text-left w-12">
-                  <UCheckbox
-                    :model-value="isAllSelected"
-                    @update:model-value="toggleSelectAll"
-                  />
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                >
-                  User name
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                >
-                  Access
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                >
-                  Last active
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                >
-                  Date added
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider w-12"
-                ></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="user in paginatedUsers"
-                :key="user.id"
-                class="transition-colors"
-              >
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <UCheckbox
-                    :model-value="selected.includes(user.id)"
-                    @update:model-value="selectUser(user.id)"
-                  />
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center gap-3">
-                    <UAvatar :src="user.avatar" :alt="user.name" size="sm" />
-                    <div>
-                      <div class="font-medium">
-                        {{ user.name }}
-                      </div>
-                      <div class="text-sm">{{ user.email }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="flex flex-wrap gap-2">
-                    <UBadge
-                      v-for="access in user.access"
-                      :key="access"
-                      :color="access === 'Admin' ? 'primary' : 'neutral'"
-                      variant="subtle"
-                      size="sm"
-                    >
-                      {{ access }}
-                    </UBadge>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm">{{ user.lastActive }}</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm">{{ user.dateAdded }}</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right">
-                  <UDropdown :items="getActions(user)">
-                    <UButton
-                      color="neutral"
-                      variant="ghost"
-                      icon="i-heroicons-ellipsis-horizontal-20-solid"
-                      square
-                    />
-                  </UDropdown>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div v-if="paginatedUsers.length === 0" class="text-center py-12">
-          <UIcon
-            name="i-heroicons-users-20-solid"
-            class="w-12 h-12 mx-auto text-gray-400 mb-3"
-          />
-          <h3 class="text-sm font-medium text-gray-900 mb-1">No users found</h3>
-          <p class="text-sm text-gray-500">
-            Try adjusting your search or filter to find what you're looking for.
-          </p>
-        </div>
-
-        <template #footer>
-          <div
-            class="flex flex-col sm:flex-row items-center justify-between gap-4 py-4"
-          >
-            <div class="text-sm text-gray-700">
-              Showing
-              <span class="font-medium">{{ (page - 1) * pageSize + 1 }}</span>
-              to
-              <span class="font-medium">{{
-                Math.min(page * pageSize, filteredUsers.length)
-              }}</span>
-              of
-              <span class="font-medium">{{ filteredUsers.length }}</span>
-              results
-
-              <span class="ml-4 text-red-500 font-bold">
-                {{ page }} / {{ totalPages }}
-              </span>
-            </div>
-
-            <UPagination
-              v-model:page="page"
-              :total="filteredUsers.length"
-              :page-size="pageSize"
+  <ClientOnly>
+    <div class="min-h-screen w-full">
+      <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+          <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+            <UIcon
+              name="i-heroicons-building-storefront-20-solid"
+              class="w-5 h-5"
             />
+            <span class="font-medium">KemenPU</span>
+            <UIcon name="i-heroicons-chevron-right-20-solid" class="w-4 h-4" />
+            <span>User management</span>
           </div>
-        </template>
-      </UCard>
+
+          <h1 class="text-3xl font-bold mb-2">User management</h1>
+          <p>Manage your team members and their account permissions here.</p>
+        </div>
+
+        <UCard class="shadow-sm w-full">
+          <template #header>
+            <div
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            >
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg font-semibold">All users</h2>
+                <UBadge color="neutral" variant="subtle" size="md">
+                  {{ filteredUsers.length }}
+                </UBadge>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <UInput
+                  v-model="searchQuery"
+                  icon="i-heroicons-magnifying-glass-20-solid"
+                  placeholder="Search"
+                  class="w-full sm:w-80"
+                  color="neutral"
+                />
+                <UButton
+                  icon="i-heroicons-funnel-20-solid"
+                  color="neutral"
+                  variant="outline"
+                >
+                  Filters
+                </UButton>
+                <UButton
+                  icon="i-heroicons-plus-20-solid"
+                  color="primary"
+                  class="w-full sm:w-80"
+                  @click="addUser"
+                >
+                  Add user
+                </UButton>
+              </div>
+            </div>
+          </template>
+
+          <div class="overflow-x-auto w-full">
+            <table class="w-full divide-y">
+              <thead>
+                <tr>
+                  <th class="px-6 py-3 text-left w-12">
+                    <UCheckbox
+                      :model-value="isAllSelected"
+                      @update:model-value="toggleSelectAll"
+                    />
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                  >
+                    User name
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                  >
+                    Access
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                  >
+                    Last active
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                  >
+                    Date added
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider w-12"
+                  ></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="user in paginatedUsers"
+                  :key="user.id"
+                  class="transition-colors"
+                >
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <UCheckbox
+                      :model-value="selected.includes(user.id)"
+                      @update:model-value="selectUser(user.id)"
+                    />
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center gap-3">
+                      <UAvatar :src="user.avatar" :alt="user.name" size="sm" />
+                      <div>
+                        <div class="font-medium">
+                          {{ user.name }}
+                        </div>
+                        <div class="text-sm">{{ user.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex flex-wrap gap-2">
+                      <UBadge
+                        v-for="access in user.access"
+                        :key="access"
+                        :color="access === 'Admin' ? 'primary' : 'neutral'"
+                        variant="subtle"
+                        size="sm"
+                      >
+                        {{ access }}
+                      </UBadge>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm">{{ user.lastActive }}</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm">{{ user.dateAdded }}</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right">
+                    <UDropdown :items="getActions(user)">
+                      <UButton
+                        color="neutral"
+                        variant="ghost"
+                        icon="i-heroicons-ellipsis-horizontal-20-solid"
+                        square
+                      />
+                    </UDropdown>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-if="paginatedUsers.length === 0" class="text-center py-12">
+            <UIcon
+              name="i-heroicons-users-20-solid"
+              class="w-12 h-12 mx-auto text-gray-400 mb-3"
+            />
+            <h3 class="text-sm font-medium text-gray-900 mb-1">
+              No users found
+            </h3>
+            <p class="text-sm text-gray-500">
+              Try adjusting your search or filter to find what you're looking
+              for.
+            </p>
+          </div>
+
+          <template #footer>
+            <div
+              class="flex flex-col sm:flex-row items-center justify-between gap-4 py-4"
+            >
+              <div class="text-sm text-gray-700">
+                Showing
+                <span class="font-medium">{{ (page - 1) * pageSize + 1 }}</span>
+                to
+                <span class="font-medium">{{
+                  Math.min(page * pageSize, filteredUsers.length)
+                }}</span>
+                of
+                <span class="font-medium">{{ filteredUsers.length }}</span>
+                results
+
+                <span class="ml-4 text-red-500 font-bold">
+                  {{ page }} / {{ totalPages }}
+                </span>
+              </div>
+
+              <UPagination
+                v-model:page="page"
+                :total="filteredUsers.length"
+                :page-size="pageSize"
+              />
+            </div>
+          </template>
+        </UCard>
+      </div>
     </div>
-  </div>
+  </ClientOnly>
 </template>

@@ -2,7 +2,8 @@
 import * as z from "zod";
 import type { FormSubmitEvent, AuthFormField } from "@nuxt/ui";
 
-const toast = useToast();
+const { signInEmail, signInSocial } = useAuth();
+const router = useRouter();
 
 definePageMeta({
   layout: "auth",
@@ -23,56 +24,67 @@ const fields: AuthFormField[] = [
     placeholder: "Enter your password",
     required: true,
   },
-  {
-    name: "remember",
-    label: "Remember me",
-    type: "checkbox",
-  },
 ];
 
 const providers = [
   {
     label: "Google",
     icon: "i-simple-icons-google",
-    onClick: () => {
-      toast.add({ title: "Google", description: "Login with Google" });
-    },
+    onClick: () => signInSocial("google"),
   },
   {
     label: "GitHub",
     icon: "i-simple-icons-github",
-    onClick: () => {
-      toast.add({ title: "GitHub", description: "Login with GitHub" });
-    },
+    onClick: () => signInSocial("github"),
   },
 ];
 
 const schema = z.object({
-  email: z.email("Invalid email"),
-  password: z
-    .string("Password is required")
-    .min(8, "Must be at least 8 characters"),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(8, "Must be at least 8 characters"),
 });
 
 type Schema = z.output<typeof schema>;
 
-function onSubmit(payload: FormSubmitEvent<Schema>) {
-  console.log("Submitted", payload);
+const loading = ref(false);
+
+async function onSubmit(payload: FormSubmitEvent<Schema>) {
+  loading.value = true;
+
+  const result = await signInEmail(payload.data);
+
+  if (!result.error) {
+    router.push("/");
+  }
+
+  loading.value = false;
 }
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center gap-4 p-4 h-screen">
-    <UPageCard class="w-full max-w-md">
-      <UAuthForm
-        :schema="schema"
-        title="Login"
-        description="Enter your credentials to access your account."
-        icon="i-lucide-user"
-        :fields="fields"
-        :providers="providers"
-        @submit="onSubmit"
-      />
-    </UPageCard>
-  </div>
+  <ClientOnly>
+    <div class="flex flex-col items-center justify-center gap-4 p-4 h-screen">
+      <UPageCard class="w-full max-w-md">
+        <UAuthForm
+          :schema="schema"
+          title="Login"
+          description="Sign in to your account."
+          icon="i-lucide-log-in"
+          :fields="fields"
+          :providers="providers"
+          :loading="loading"
+          @submit="onSubmit"
+        >
+          <template #footer>
+            <div class="text-center text-sm">
+              Don't have an account?
+              <NuxtLink to="/register" class="text-primary hover:underline">
+                Sign up
+              </NuxtLink>
+            </div>
+          </template>
+        </UAuthForm>
+      </UPageCard>
+    </div>
+  </ClientOnly>
 </template>

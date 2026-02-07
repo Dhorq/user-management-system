@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import * as z from "zod";
 import type { FormSubmitEvent, AuthFormField } from "@nuxt/ui";
-import { useAuth } from "~/composables/useAuth";
 
-const toast = useToast();
-const authClient = useAuth();
+const { signUpEmail, signInSocial } = useAuth();
 const router = useRouter();
 
 definePageMeta({
@@ -39,22 +37,12 @@ const providers = [
   {
     label: "Google",
     icon: "i-simple-icons-google",
-    onClick: async () => {
-      await authClient.signIn.social({
-        provider: "google",
-        callbackURL: "/dashboard",
-      });
-    },
+    onClick: () => signInSocial("google"),
   },
   {
     label: "GitHub",
     icon: "i-simple-icons-github",
-    onClick: async () => {
-      await authClient.signIn.social({
-        provider: "github",
-        callbackURL: "/dashboard",
-      });
-    },
+    onClick: () => signInSocial("github"),
   },
 ];
 
@@ -71,38 +59,13 @@ const loading = ref(false);
 async function onSubmit(payload: FormSubmitEvent<Schema>) {
   loading.value = true;
 
-  try {
-    const result = await authClient.signUp.email({
-      email: payload.data.email,
-      password: payload.data.password,
-      name: payload.data.name,
-    });
+  const result = await signUpEmail(payload.data);
 
-    if (result.error) {
-      toast.add({
-        title: "Error",
-        description: result.error.message,
-        color: "neutral",
-      });
-      return;
-    }
-
-    toast.add({
-      title: "Success",
-      description: "Account created successfully!",
-      color: "neutral",
-    });
-
-    router.push("/dashboard");
-  } catch (error: any) {
-    toast.add({
-      title: "Error",
-      description: error.message || "Failed to register",
-      color: "neutral",
-    });
-  } finally {
-    loading.value = false;
+  if (!result.error) {
+    router.push("/");
   }
+
+  loading.value = false;
 }
 </script>
 
