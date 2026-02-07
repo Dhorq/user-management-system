@@ -6,6 +6,6 @@ definePageMeta({
 
 <template>
   <div class="p-6">
-    <h1 class="text-2xl font-bold">Inbox</h1>
+    <h1 class="text-2xl font-bold">Security Settings</h1>
   </div>
 </template>

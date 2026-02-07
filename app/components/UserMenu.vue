@@ -5,20 +5,23 @@ defineProps<{
   collapsed?: boolean;
 }>();
 
+const isOpen = ref(false);
+
 const handleLogout = async () => {
   await logout();
+  isOpen.value = false;
   await navigateTo("/login");
 };
 </script>
 
 <template>
-  <UPopover :popper="{ placement: 'top-start' }">
+  <UPopover v-model:open="isOpen" :popper="{ placement: 'top-start' }">
     <UAvatar
       :src="
         session.data?.user?.image ||
         'https://avatars.githubusercontent.com/u/739984?v=4'
       "
-      :alt="session.data?.user?.name || 'User avatar'"
+      :alt="session.data?.user?.name || 'User'"
       size="sm"
       class="cursor-pointer hover:opacity-80 transition-opacity"
     />
@@ -31,17 +34,16 @@ const handleLogout = async () => {
           variant="ghost"
           color="primary"
           class="w-full justify-start mb-1"
+          @click="isOpen = false"
         >
           Profile
         </UButton>
-
-        <UDivider class="my-2" />
 
         <UButton
           icon="i-lucide-log-out"
           variant="ghost"
           color="primary"
-          class="w-full justify-start"
+          class="w-full justify-start mt-1"
           @click="handleLogout"
         >
           Logout
