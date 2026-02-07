@@ -26,9 +26,9 @@ const links = [
       },
     },
     {
-      label: "Customers",
+      label: "Employees",
       icon: "i-lucide-users",
-      to: "/customers",
+      to: "/employees",
       onSelect: () => {
         open.value = false;
       },
@@ -44,13 +44,6 @@ const links = [
           label: "General",
           to: "/settings",
           exact: true,
-          onSelect: () => {
-            open.value = false;
-          },
-        },
-        {
-          label: "Members",
-          to: "/settings/members",
           onSelect: () => {
             open.value = false;
           },
@@ -76,13 +69,13 @@ const links = [
     {
       label: "Feedback",
       icon: "i-lucide-message-circle",
-      to: "https://github.com/nuxt-ui-templates/dashboard",
+      to: "https://github.com/Dhorq/user-management-system",
       target: "_blank",
     },
     {
       label: "Help & Support",
       icon: "i-lucide-info",
-      to: "https://github.com/nuxt-ui-templates/dashboard",
+      to: "https://github.com/Dhorq/user-management-system",
       target: "_blank",
     },
   ],
@@ -102,7 +95,7 @@ const groups = computed(() => [
         id: "source",
         label: "View page source",
         icon: "i-simple-icons-github",
-        to: `https://github.com/nuxt-ui-templates/dashboard/blob/main/app/pages${route.path === "/" ? "/index" : route.path}.vue`,
+        to: "https://github.com/Dhorq/user-management-system",
         target: "_blank",
       },
     ],
