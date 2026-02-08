@@ -8,7 +8,6 @@ definePageMeta({
 });
 
 const toast = useToast();
-const router = useRouter();
 const page = ref(1);
 const pageSize = ref(7);
 const searchQuery = ref("");
@@ -28,6 +27,8 @@ interface User {
 }
 
 const users = ref<User[]>([]);
+const { user } = useAuth();
+const currentUserRole = computed(() => user.value?.role || null);
 
 onMounted(async () => {
   try {
@@ -130,21 +131,81 @@ const showingTo = computed(() =>
   Math.min(page.value * pageSize.value, filteredUsers.value.length),
 );
 
-async function changeUserRole(user: User, newRole: Role) {
-  console.log("Changing role for user:", user.id, "to", newRole);
+// Generate dropdown items based on current user role
+function getDropdownItems(user: User) {
+  const role = currentUserRole.value;
 
+  // USER: no dropdown
+  if (role === "USER") {
+    return null;
+  }
+
+  // MANAGER: only view profile
+  if (role === "MANAGER") {
+    return [
+      [
+        {
+          label: "View profile",
+          icon: "i-heroicons-user-20-solid",
+          to: "/profile",
+        },
+      ],
+    ];
+  }
+
+  // ADMIN: full access
+  if (role === "ADMIN") {
+    return [
+      [
+        {
+          label: "View profile",
+          icon: "i-heroicons-user-20-solid",
+          to: "/profile",
+        },
+      ],
+      [
+        {
+          label: "Change to Admin",
+          icon: "i-heroicons-shield-check-20-solid",
+          disabled: user.role === "ADMIN",
+          onSelect: () => changeUserRole(user, "ADMIN"),
+        },
+        {
+          label: "Change to Manager",
+          icon: "i-heroicons-briefcase-20-solid",
+          disabled: user.role === "MANAGER",
+          onSelect: () => changeUserRole(user, "MANAGER"),
+        },
+        {
+          label: "Change to User",
+          icon: "i-heroicons-user-20-solid",
+          disabled: user.role === "USER",
+          onSelect: () => changeUserRole(user, "USER"),
+        },
+      ],
+      [
+        {
+          label: "Delete",
+          icon: "i-heroicons-trash-20-solid",
+          onSelect: () => deleteUser(user),
+        },
+      ],
+    ];
+  }
+
+  return null;
+}
+
+async function changeUserRole(user: User, newRole: Role) {
   try {
-    const response = await $fetch(`/api/users/${user.id}`, {
-      method: "POST",
+    const response = await $fetch(`/api/users/${user.id}/role`, {
+      method: "PUT" as any,
       body: { role: newRole },
     });
-
-    console.log("API Response:", response);
 
     const foundUser = users.value.find((u) => u.id === user.id);
     if (foundUser) {
       foundUser.role = newRole;
-      console.log("Updated local user:", foundUser);
     }
 
     toast.add({
@@ -154,7 +215,6 @@ async function changeUserRole(user: User, newRole: Role) {
       icon: "i-heroicons-check-circle-20-solid",
     });
   } catch (error) {
-    console.error("Error updating role:", error);
     toast.add({
       title: "Error",
       description: "Failed to update user role",
@@ -193,11 +253,20 @@ function deleteSelected() {
   });
 }
 
+const isAddUserModalOpen = ref(false);
+
 function addUser() {
+  isAddUserModalOpen.value = true;
+}
+
+function handleUserAdded(newUser: User) {
+  users.value.unshift(newUser);
+
   toast.add({
-    title: "Add User",
-    description: "Opening add user dialog...",
-    icon: "i-heroicons-plus-20-solid",
+    title: "User Added",
+    description: `${newUser.name} has been added`,
+    color: "success",
+    icon: "i-heroicons-check-circle-20-solid",
   });
 }
 
@@ -311,6 +380,7 @@ function toggleSelectAll() {
                   Filters
                 </UButton>
                 <UButton
+                  v-if="user?.role === 'ADMIN'"
                   icon="i-heroicons-plus-20-solid"
                   color="primary"
                   @click="addUser"
@@ -429,42 +499,8 @@ function toggleSelectAll() {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right">
                     <UDropdownMenu
-                      :items="[
-                        [
-                          {
-                            label: 'View profile',
-                            icon: 'i-heroicons-user-20-solid',
-                            to: '/profile',
-                          },
-                        ],
-                        [
-                          {
-                            label: 'Change to Admin',
-                            icon: 'i-heroicons-shield-check-20-solid',
-                            disabled: user.role === 'ADMIN',
-                            onSelect: () => changeUserRole(user, 'ADMIN'),
-                          },
-                          {
-                            label: 'Change to Manager',
-                            icon: 'i-heroicons-briefcase-20-solid',
-                            disabled: user.role === 'MANAGER',
-                            onSelect: () => changeUserRole(user, 'MANAGER'),
-                          },
-                          {
-                            label: 'Change to User',
-                            icon: 'i-heroicons-user-20-solid',
-                            disabled: user.role === 'USER',
-                            onSelect: () => changeUserRole(user, 'USER'),
-                          },
-                        ],
-                        [
-                          {
-                            label: 'Delete',
-                            icon: 'i-heroicons-trash-20-solid',
-                            onSelect: () => deleteUser(user),
-                          },
-                        ],
-                      ]"
+                      v-if="getDropdownItems(user)"
+                      :items="getDropdownItems(user)!"
                     >
                       <UButton
                         color="neutral"
@@ -536,5 +572,10 @@ function toggleSelectAll() {
         </UCard>
       </div>
     </div>
+
+    <AddUser
+      v-model:isOpen="isAddUserModalOpen"
+      @user-added="handleUserAdded"
+    />
   </ClientOnly>
 </template>
