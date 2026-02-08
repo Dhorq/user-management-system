@@ -29,6 +29,13 @@ interface User {
 const users = ref<User[]>([]);
 const { user } = useAuth();
 const currentUserRole = computed(() => user.value?.role || null);
+const currentUser = computed(() => user.value ?? null);
+
+const isSelf = (id: string) => currentUser.value?.id === id;
+
+function onRowClick(rowUser: User) {
+  if (isSelf(rowUser.id)) return;
+}
 
 onMounted(async () => {
   try {
@@ -434,6 +441,9 @@ function toggleSelectAll() {
                     'bg-primary-50 dark:bg-primary-900/20': selected.includes(
                       user.id,
                     ),
+                    'bg-gray-100 dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/10':
+                      isSelf(user.id),
+                    'cursor-pointer': !isSelf(user.id),
                   }"
                 >
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -488,7 +498,7 @@ function toggleSelectAll() {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right">
                     <UDropdownMenu
-                      v-if="getDropdownItems(user)"
+                      v-if="!isSelf(user.id) && getDropdownItems(user)"
                       :items="getDropdownItems(user)!"
                     >
                       <UButton
