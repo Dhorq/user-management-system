@@ -16,7 +16,6 @@ definePageMeta({
 const { isAdmin } = useAuth();
 const toast = useToast();
 
-// Redirect if not admin
 onMounted(() => {
   if (!isAdmin.value) {
     navigateTo("/");

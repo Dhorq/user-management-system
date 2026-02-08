@@ -26,5 +26,14 @@ export default defineEventHandler(async (event) => {
     data: { role },
   });
 
+  if (session.user.id === userId) {
+    await auth.api.updateUser({
+      headers: event.headers,
+      body: {
+        role: role,
+      },
+    });
+  }
+
   return user;
 });

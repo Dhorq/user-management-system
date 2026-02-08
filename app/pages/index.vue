@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { DropdownMenuItem } from "#ui/types";
 import { ref, computed, watch, onMounted } from "vue";
 
 definePageMeta({
@@ -9,15 +8,13 @@ definePageMeta({
 });
 
 const toast = useToast();
+const router = useRouter();
 const page = ref(1);
 const pageSize = ref(7);
 const searchQuery = ref("");
 const selected = ref<string[]>([]);
 const isLoading = ref(true);
 
-// ──────────────────────────────────────────────
-// Types — matches Prisma schema
-// ──────────────────────────────────────────────
 type Role = "ADMIN" | "MANAGER" | "USER";
 
 interface User {
@@ -26,8 +23,8 @@ interface User {
   email: string;
   image: string | null;
   role: Role;
-  lastActiveAt: string; // ISO date string from API
-  createdAt: string; // ISO date string from API
+  lastActiveAt: string;
+  createdAt: string;
 }
 
 const users = ref<User[]>([]);
@@ -48,9 +45,6 @@ onMounted(async () => {
   }
 });
 
-// ──────────────────────────────────────────────
-// Date & time helpers
-// ──────────────────────────────────────────────
 function timeAgo(dateStr: string): string {
   const now = new Date();
   const date = new Date(dateStr);
@@ -88,9 +82,6 @@ function isRecentlyActive(dateStr: string): boolean {
   return hours < 24;
 }
 
-// ──────────────────────────────────────────────
-// Role helpers
-// ──────────────────────────────────────────────
 function getRoleLabel(role: Role): string {
   const labels: Record<Role, string> = {
     ADMIN: "Admin",
@@ -100,8 +91,8 @@ function getRoleLabel(role: Role): string {
   return labels[role] || role;
 }
 
-function getRoleColor(role: Role): string {
-  const colors: Record<Role, string> = {
+function getRoleColor(role: Role): "error" | "primary" | "neutral" {
+  const colors: Record<Role, "error" | "primary" | "neutral"> = {
     ADMIN: "error",
     MANAGER: "primary",
     USER: "neutral",
@@ -109,9 +100,6 @@ function getRoleColor(role: Role): string {
   return colors[role] || "neutral";
 }
 
-// ──────────────────────────────────────────────
-// Filter & Pagination
-// ──────────────────────────────────────────────
 const filteredUsers = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   if (!q) return users.value;
@@ -134,10 +122,6 @@ const paginatedUsers = computed(() => {
   return filteredUsers.value.slice(start, end);
 });
 
-const totalPages = computed(() =>
-  Math.ceil(filteredUsers.value.length / pageSize.value),
-);
-
 const showingFrom = computed(() =>
   filteredUsers.value.length > 0 ? (page.value - 1) * pageSize.value + 1 : 0,
 );
@@ -146,47 +130,38 @@ const showingTo = computed(() =>
   Math.min(page.value * pageSize.value, filteredUsers.value.length),
 );
 
-// ──────────────────────────────────────────────
-// Actions
-// ──────────────────────────────────────────────
-function getActions(user: User): DropdownMenuItem[][] {
-  return [
-    [
-      {
-        label: "Edit",
-        icon: "i-heroicons-pencil-square-20-solid",
-        click: () => editUser(user),
-      },
-      {
-        label: "View profile",
-        icon: "i-heroicons-user-20-solid",
-        click: () => viewProfile(user),
-      },
-    ],
-    [
-      {
-        label: "Delete",
-        icon: "i-heroicons-trash-20-solid",
-        click: () => deleteUser(user),
-      },
-    ],
-  ];
-}
+async function changeUserRole(user: User, newRole: Role) {
+  console.log("Changing role for user:", user.id, "to", newRole);
 
-function editUser(user: User) {
-  toast.add({
-    title: "Edit User",
-    description: `Editing ${user.name}`,
-    icon: "i-heroicons-pencil-square-20-solid",
-  });
-}
+  try {
+    const response = await $fetch(`/api/users/${user.id}`, {
+      method: "POST",
+      body: { role: newRole },
+    });
 
-function viewProfile(user: User) {
-  toast.add({
-    title: "User Profile",
-    description: `Opening profile for ${user.name}`,
-    icon: "i-heroicons-user-20-solid",
-  });
+    console.log("API Response:", response);
+
+    const foundUser = users.value.find((u) => u.id === user.id);
+    if (foundUser) {
+      foundUser.role = newRole;
+      console.log("Updated local user:", foundUser);
+    }
+
+    toast.add({
+      title: "Role Updated",
+      description: `${user.name}'s role changed to ${getRoleLabel(newRole)}`,
+      color: "success",
+      icon: "i-heroicons-check-circle-20-solid",
+    });
+  } catch (error) {
+    console.error("Error updating role:", error);
+    toast.add({
+      title: "Error",
+      description: "Failed to update user role",
+      color: "error",
+      icon: "i-heroicons-exclamation-triangle-20-solid",
+    });
+  }
 }
 
 function deleteUser(user: User) {
@@ -226,9 +201,6 @@ function addUser() {
   });
 }
 
-// ──────────────────────────────────────────────
-// Selection
-// ──────────────────────────────────────────────
 function selectUser(userId: string) {
   const index = selected.value.indexOf(userId);
   if (index === -1) {
@@ -267,7 +239,6 @@ function toggleSelectAll() {
   <ClientOnly>
     <div class="min-h-screen w-full">
       <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Breadcrumb -->
         <div class="mb-8">
           <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
             <UIcon
@@ -285,9 +256,7 @@ function toggleSelectAll() {
           </p>
         </div>
 
-        <!-- Main Card -->
         <UCard class="shadow-sm w-full">
-          <!-- Header -->
           <template #header>
             <div
               class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -298,7 +267,6 @@ function toggleSelectAll() {
                   {{ filteredUsers.length }}
                 </UBadge>
 
-                <!-- Bulk actions -->
                 <Transition
                   enter-active-class="transition duration-200 ease-out"
                   enter-from-class="opacity-0 scale-95"
@@ -353,7 +321,6 @@ function toggleSelectAll() {
             </div>
           </template>
 
-          <!-- Loading State -->
           <div v-if="isLoading" class="flex items-center justify-center py-20">
             <div class="text-center">
               <UIcon
@@ -364,7 +331,6 @@ function toggleSelectAll() {
             </div>
           </div>
 
-          <!-- Table -->
           <div v-else class="overflow-x-auto w-full">
             <table class="w-full divide-y">
               <thead>
@@ -433,7 +399,11 @@ function toggleSelectAll() {
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <UBadge :color="primary" variant="subtle" size="sm">
+                    <UBadge
+                      :color="getRoleColor(user.role)"
+                      variant="subtle"
+                      size="sm"
+                    >
                       {{ getRoleLabel(user.role) }}
                     </UBadge>
                   </td>
@@ -458,21 +428,57 @@ function toggleSelectAll() {
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right">
-                    <UDropdown :items="getActions(user)">
+                    <UDropdownMenu
+                      :items="[
+                        [
+                          {
+                            label: 'View profile',
+                            icon: 'i-heroicons-user-20-solid',
+                            to: '/profile',
+                          },
+                        ],
+                        [
+                          {
+                            label: 'Change to Admin',
+                            icon: 'i-heroicons-shield-check-20-solid',
+                            disabled: user.role === 'ADMIN',
+                            onSelect: () => changeUserRole(user, 'ADMIN'),
+                          },
+                          {
+                            label: 'Change to Manager',
+                            icon: 'i-heroicons-briefcase-20-solid',
+                            disabled: user.role === 'MANAGER',
+                            onSelect: () => changeUserRole(user, 'MANAGER'),
+                          },
+                          {
+                            label: 'Change to User',
+                            icon: 'i-heroicons-user-20-solid',
+                            disabled: user.role === 'USER',
+                            onSelect: () => changeUserRole(user, 'USER'),
+                          },
+                        ],
+                        [
+                          {
+                            label: 'Delete',
+                            icon: 'i-heroicons-trash-20-solid',
+                            onSelect: () => deleteUser(user),
+                          },
+                        ],
+                      ]"
+                    >
                       <UButton
                         color="neutral"
                         variant="ghost"
                         icon="i-heroicons-ellipsis-horizontal-20-solid"
                         square
                       />
-                    </UDropdown>
+                    </UDropdownMenu>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Empty State -->
           <div
             v-if="!isLoading && paginatedUsers.length === 0"
             class="text-center py-16"
@@ -500,7 +506,6 @@ function toggleSelectAll() {
             </UButton>
           </div>
 
-          <!-- Footer / Pagination -->
           <template #footer>
             <div
               class="flex flex-col sm:flex-row items-center justify-between gap-4 py-2"
