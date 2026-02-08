@@ -3,7 +3,10 @@ import type { NavigationMenuItem } from "@nuxt/ui";
 
 const toast = useToast();
 
+const { user } = useAuth();
+
 const open = ref(false);
+const isCollapsed = ref(false); // Tambahkan state untuk collapsed
 
 const links = [
   [
@@ -101,6 +104,11 @@ const groups = computed(() => [
   },
 ]);
 
+// Fungsi toggle collapse
+function toggleCollapse() {
+  isCollapsed.value = !isCollapsed.value;
+}
+
 onMounted(async () => {
   const cookie = useCookie("cookie-consent");
   if (cookie.value === "accepted") {
@@ -136,13 +144,32 @@ onMounted(async () => {
     <UDashboardSidebar
       id="default"
       v-model:open="open"
+      v-model:collapsed="isCollapsed"
       collapsible
       resizable
       class="bg-elevated/25"
       :ui="{ footer: 'lg:border-t lg:border-default' }"
     >
       <template #header="{ collapsed }">
-        <TeamsMenu :collapsed="collapsed" />
+        <div class="flex items-center justify-between">
+          <TeamsMenu :collapsed="collapsed" />
+          <UButton
+            v-if="!collapsed"
+            icon="i-lucide-panel-left-close"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            @click="toggleCollapse"
+          />
+          <UButton
+            v-else
+            icon="i-lucide-panel-left-open"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            @click="toggleCollapse"
+          />
+        </div>
       </template>
 
       <template #default="{ collapsed }">
@@ -169,7 +196,17 @@ onMounted(async () => {
       </template>
 
       <template #footer="{ collapsed }">
-        <UserMenu :collapsed="collapsed" />
+        <div class="flex items-center gap-3">
+          <UserMenu :collapsed="collapsed" />
+          <div v-if="!collapsed" class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">
+              {{ user?.name || "User" }}
+            </p>
+            <p class="text-xs text-gray-500 truncate">
+              {{ user?.email || "" }}
+            </p>
+          </div>
+        </div>
       </template>
     </UDashboardSidebar>
 

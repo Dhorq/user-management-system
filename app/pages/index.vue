@@ -131,16 +131,13 @@ const showingTo = computed(() =>
   Math.min(page.value * pageSize.value, filteredUsers.value.length),
 );
 
-// Generate dropdown items based on current user role
 function getDropdownItems(user: User) {
   const role = currentUserRole.value;
 
-  // USER: no dropdown
   if (role === "USER") {
     return null;
   }
 
-  // MANAGER: only view profile
   if (role === "MANAGER") {
     return [
       [
@@ -153,7 +150,6 @@ function getDropdownItems(user: User) {
     ];
   }
 
-  // ADMIN: full access
   if (role === "ADMIN") {
     return [
       [
