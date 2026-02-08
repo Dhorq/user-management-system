@@ -373,13 +373,6 @@ function toggleSelectAll() {
                   color="neutral"
                 />
                 <UButton
-                  icon="i-heroicons-funnel-20-solid"
-                  color="neutral"
-                  variant="outline"
-                >
-                  Filters
-                </UButton>
-                <UButton
                   v-if="user?.role === 'ADMIN'"
                   icon="i-heroicons-plus-20-solid"
                   color="primary"
