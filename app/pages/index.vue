@@ -420,11 +420,6 @@ function toggleSelectAll() {
                   <th
                     class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                   >
-                    Last Active
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                  >
                     Date Added
                   </th>
                   <th
@@ -475,21 +470,6 @@ function toggleSelectAll() {
                     >
                       {{ getRoleLabel(user.role) }}
                     </UBadge>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center gap-2">
-                      <span
-                        class="w-2 h-2 rounded-full"
-                        :class="
-                          isRecentlyActive(user.lastActiveAt)
-                            ? 'bg-green-500'
-                            : 'bg-gray-300'
-                        "
-                      ></span>
-                      <span class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ timeAgo(user.lastActiveAt) }}
-                      </span>
-                    </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="text-sm text-gray-600 dark:text-gray-400">
