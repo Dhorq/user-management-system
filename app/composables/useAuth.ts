@@ -10,7 +10,7 @@ interface UserWithRole {
   id: string;
   email: string;
   name: string;
-  role?: UserRole;
+  role: UserRole;
   image?: string | null;
   emailVerified: boolean;
   createdAt: Date;
@@ -144,14 +144,6 @@ export const useAuth = () => {
   const isManager = computed(() => user.value?.role === "MANAGER");
   const isUser = computed(() => user.value?.role === "USER");
 
-  const hasRole = (role: UserRole) => {
-    return user.value?.role === role;
-  };
-
-  const hasAnyRole = (roles: UserRole[]) => {
-    return roles.includes(user.value?.role as UserRole);
-  };
-
   return {
     signUpEmail,
     signInEmail,
@@ -162,8 +154,6 @@ export const useAuth = () => {
     isAdmin,
     isManager,
     isUser,
-    hasRole,
-    hasAnyRole,
     authClient,
   };
 };

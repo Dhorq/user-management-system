@@ -2,11 +2,10 @@
 import type { NavigationMenuItem } from "@nuxt/ui";
 
 const toast = useToast();
-
 const { user } = useAuth();
 
 const open = ref(false);
-const isCollapsed = ref(false); // Tambahkan state untuk collapsed
+const isCollapsed = ref(false);
 
 const links = [
   [
@@ -104,11 +103,6 @@ const groups = computed(() => [
   },
 ]);
 
-// Fungsi toggle collapse
-function toggleCollapse() {
-  isCollapsed.value = !isCollapsed.value;
-}
-
 onMounted(async () => {
   const cookie = useCookie("cookie-consent");
   if (cookie.value === "accepted") {
@@ -137,6 +131,10 @@ onMounted(async () => {
     ],
   });
 });
+
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value;
+};
 </script>
 
 <template>
@@ -213,7 +211,5 @@ onMounted(async () => {
     <UDashboardSearch :groups="groups" />
 
     <slot />
-
-    <NotificationsSlideover />
   </UDashboardGroup>
 </template>

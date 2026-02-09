@@ -1,10 +1,6 @@
 <script setup lang="ts">
 const { logout, session } = useAuth();
 
-defineProps<{
-  collapsed?: boolean;
-}>();
-
 const isOpen = ref(false);
 
 const handleLogout = async () => {

@@ -14,6 +14,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     "/settings",
     "/profile",
   ];
+
   const isProtectedRoute = protectedRoutes.some((route) =>
     to.path.startsWith(route),
   );

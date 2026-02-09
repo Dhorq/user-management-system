@@ -28,18 +28,14 @@ interface User {
 
 const users = ref<User[]>([]);
 const { user } = useAuth();
+
+const isSelf = (id: string) => currentUser.value?.id === id;
 const currentUserRole = computed(() => user.value?.role || null);
 const currentUser = computed(() => user.value ?? null);
 
-const isSelf = (id: string) => currentUser.value?.id === id;
-
-function onRowClick(rowUser: User) {
-  if (isSelf(rowUser.id)) return;
-}
-
 onMounted(async () => {
   try {
-    const res = await $fetch<User[]>("/api/users");
+    const res = await $fetch<User[]>("/api/users/users", { method: "GET" });
     users.value = res;
   } catch (error) {
     toast.add({
@@ -53,60 +49,31 @@ onMounted(async () => {
   }
 });
 
-function timeAgo(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (seconds < 60) return "Just now";
-
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-
-  const weeks = Math.floor(days / 7);
-  if (weeks < 4) return `${weeks}w ago`;
-
-  return formatDate(dateStr);
-}
-
-function formatDate(dateStr: string): string {
+const formatDate = (dateStr: string): string => {
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
-}
+};
 
-function isRecentlyActive(dateStr: string): boolean {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const hours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-  return hours < 24;
-}
-
-function getRoleLabel(role: Role): string {
+const getRoleLabel = (role: Role): string => {
   const labels: Record<Role, string> = {
     ADMIN: "Admin",
     MANAGER: "Manager",
     USER: "User",
   };
   return labels[role] || role;
-}
+};
 
-function getRoleColor(role: Role): "error" | "primary" | "neutral" {
+const getRoleColor = (role: Role): "error" | "primary" | "neutral" => {
   const colors: Record<Role, "error" | "primary" | "neutral"> = {
     ADMIN: "error",
     MANAGER: "primary",
     USER: "neutral",
   };
   return colors[role] || "neutral";
-}
+};
 
 const filteredUsers = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
@@ -138,7 +105,7 @@ const showingTo = computed(() =>
   Math.min(page.value * pageSize.value, filteredUsers.value.length),
 );
 
-function getDropdownItems(user: User) {
+const getDropdownItems = (user: User) => {
   const role = currentUserRole.value;
 
   if (role === "USER") {
@@ -197,9 +164,9 @@ function getDropdownItems(user: User) {
   }
 
   return null;
-}
+};
 
-async function changeUserRole(user: User, newRole: Role) {
+const changeUserRole = async (user: User, newRole: Role) => {
   try {
     const response = await $fetch(`/api/users/${user.id}/role`, {
       method: "PUT" as any,
@@ -225,9 +192,9 @@ async function changeUserRole(user: User, newRole: Role) {
       icon: "i-heroicons-exclamation-triangle-20-solid",
     });
   }
-}
+};
 
-function deleteUser(user: User) {
+const deleteUser = (user: User) => {
   const index = users.value.findIndex((u) => u.id === user.id);
   if (index !== -1) {
     users.value.splice(index, 1);
@@ -242,27 +209,15 @@ function deleteUser(user: User) {
     color: "error",
     icon: "i-heroicons-trash-20-solid",
   });
-}
-
-function deleteSelected() {
-  const count = selected.value.length;
-  users.value = users.value.filter((u) => !selected.value.includes(u.id));
-  selected.value = [];
-  toast.add({
-    title: "Users Deleted",
-    description: `${count} user(s) have been removed`,
-    color: "error",
-    icon: "i-heroicons-trash-20-solid",
-  });
-}
+};
 
 const isAddUserModalOpen = ref(false);
 
-function addUser() {
+const addUser = () => {
   isAddUserModalOpen.value = true;
-}
+};
 
-function handleUserAdded(newUser: User) {
+const handleUserAdded = (newUser: User) => {
   users.value.unshift(newUser);
 
   toast.add({
@@ -271,40 +226,7 @@ function handleUserAdded(newUser: User) {
     color: "success",
     icon: "i-heroicons-check-circle-20-solid",
   });
-}
-
-function selectUser(userId: string) {
-  const index = selected.value.indexOf(userId);
-  if (index === -1) {
-    selected.value.push(userId);
-  } else {
-    selected.value.splice(index, 1);
-  }
-}
-
-const isAllSelected = computed(() => {
-  return (
-    paginatedUsers.value.length > 0 &&
-    paginatedUsers.value.every((user) => selected.value.includes(user.id))
-  );
-});
-
-function toggleSelectAll() {
-  if (isAllSelected.value) {
-    paginatedUsers.value.forEach((user) => {
-      const index = selected.value.indexOf(user.id);
-      if (index !== -1) {
-        selected.value.splice(index, 1);
-      }
-    });
-  } else {
-    paginatedUsers.value.forEach((user) => {
-      if (!selected.value.includes(user.id)) {
-        selected.value.push(user.id);
-      }
-    });
-  }
-}
+};
 </script>
 
 <template>
@@ -338,33 +260,6 @@ function toggleSelectAll() {
                 <UBadge color="neutral" variant="subtle" size="md">
                   {{ filteredUsers.length }}
                 </UBadge>
-
-                <Transition
-                  enter-active-class="transition duration-200 ease-out"
-                  enter-from-class="opacity-0 scale-95"
-                  enter-to-class="opacity-100 scale-100"
-                  leave-active-class="transition duration-150 ease-in"
-                  leave-from-class="opacity-100 scale-100"
-                  leave-to-class="opacity-0 scale-95"
-                >
-                  <div
-                    v-if="selected.length > 0"
-                    class="flex items-center gap-2"
-                  >
-                    <UBadge color="primary" variant="solid" size="md">
-                      {{ selected.length }} selected
-                    </UBadge>
-                    <UButton
-                      size="xs"
-                      color="error"
-                      variant="soft"
-                      icon="i-heroicons-trash-20-solid"
-                      @click="deleteSelected"
-                    >
-                      Delete
-                    </UButton>
-                  </div>
-                </Transition>
               </div>
 
               <div class="flex items-center gap-3">
@@ -379,6 +274,7 @@ function toggleSelectAll() {
                   v-if="user?.role === 'ADMIN'"
                   icon="i-heroicons-plus-20-solid"
                   color="primary"
+                  class="hover:cursor-pointer"
                   @click="addUser"
                 >
                   Add User
@@ -401,12 +297,6 @@ function toggleSelectAll() {
             <table class="w-full divide-y">
               <thead>
                 <tr>
-                  <th class="px-6 py-3 text-left w-12">
-                    <UCheckbox
-                      :model-value="isAllSelected"
-                      @update:model-value="toggleSelectAll"
-                    />
-                  </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                   >
@@ -441,12 +331,6 @@ function toggleSelectAll() {
                     'cursor-pointer': !isSelf(user.id),
                   }"
                 >
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <UCheckbox
-                      :model-value="selected.includes(user.id)"
-                      @update:model-value="selectUser(user.id)"
-                    />
-                  </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center gap-3">
                       <UAvatar

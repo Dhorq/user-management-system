@@ -11,19 +11,13 @@ const form = ref({
   name: "",
   email: "",
   password: "",
-  role: "USER" as "ADMIN" | "MANAGER" | "USER",
+  role: "USER",
 });
 
 const isLoading = ref(false);
 
-const roles = [
-  { label: "Admin", value: "ADMIN" },
-  { label: "Manager", value: "MANAGER" },
-  { label: "User", value: "USER" },
-];
-
 async function handleSubmit() {
-  if (!form.value.name || !form.value.email || !form.value.password) {
+  if (!form.value.name || !form.value.email) {
     toast.add({
       title: "Error",
       description: "Please fill in all required fields",
@@ -36,13 +30,13 @@ async function handleSubmit() {
   isLoading.value = true;
 
   try {
-    const newUser = await $fetch("/api/users/create", {
+    const newUser = await $fetch("/api/users/users", {
       method: "POST",
       body: {
         name: form.value.name,
         email: form.value.email,
-        password: form.value.password,
-        role: form.value.role,
+        password: "12345678",
+        role: "USER",
       },
     });
 
@@ -133,8 +127,9 @@ function handleClose() {
             </label>
             <UInput
               v-model="form.name"
-              placeholder="Enter full name"
+              placeholder="Ridho Rifqy Muhammad"
               icon="i-heroicons-user-20-solid"
+              class="w-100"
               required
             />
           </div>
@@ -146,32 +141,10 @@ function handleClose() {
             <UInput
               v-model="form.email"
               type="email"
-              placeholder="user@example.com"
+              placeholder="ridhorifqy@gmail.com"
               icon="i-heroicons-envelope-20-solid"
+              class="w-100"
               required
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">
-              Password <span class="text-red-500">*</span>
-            </label>
-            <UInput
-              v-model="form.password"
-              type="password"
-              placeholder="Enter password"
-              icon="i-heroicons-lock-closed-20-solid"
-              required
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">Role</label>
-            <USelect
-              v-model="form.role"
-              :options="roles"
-              option-attribute="label"
-              value-attribute="value"
             />
           </div>
 
@@ -189,6 +162,7 @@ function handleClose() {
               color="primary"
               :loading="isLoading"
               :disabled="isLoading"
+              class="hover:cursor-pointer"
             >
               Create User
             </UButton>

@@ -2,7 +2,7 @@
 import * as z from "zod";
 import type { FormSubmitEvent, AuthFormField } from "@nuxt/ui";
 
-const { signInEmail, signInSocial } = useAuth();
+const { signUpEmail, signInSocial } = useAuth();
 const router = useRouter();
 
 definePageMeta({
@@ -10,6 +10,13 @@ definePageMeta({
 });
 
 const fields: AuthFormField[] = [
+  {
+    name: "name",
+    type: "text",
+    label: "Name",
+    placeholder: "Enter your name",
+    required: true,
+  },
   {
     name: "email",
     type: "email",
@@ -40,7 +47,8 @@ const providers = [
 ];
 
 const schema = z.object({
-  email: z.string().email("Invalid email"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.email("Invalid email"),
   password: z.string().min(8, "Must be at least 8 characters"),
 });
 
@@ -51,7 +59,7 @@ const loading = ref(false);
 async function onSubmit(payload: FormSubmitEvent<Schema>) {
   loading.value = true;
 
-  const result = await signInEmail(payload.data);
+  const result = await signUpEmail(payload.data);
 
   if (!result.error) {
     router.push("/");
@@ -67,9 +75,9 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
       <UPageCard class="w-full max-w-md">
         <UAuthForm
           :schema="schema"
-          title="Login"
-          description="Sign in to your account."
-          icon="i-lucide-log-in"
+          title="Register"
+          description="Create your account to get started."
+          icon="i-lucide-user-plus"
           :fields="fields"
           :providers="providers"
           :loading="loading"
@@ -77,9 +85,9 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
         >
           <template #footer>
             <div class="text-center text-sm">
-              Don't have an account?
-              <NuxtLink to="/register" class="text-primary hover:underline">
-                Sign up
+              Already have an account?
+              <NuxtLink to="/login" class="text-primary hover:underline">
+                Sign in
               </NuxtLink>
             </div>
           </template>
