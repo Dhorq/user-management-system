@@ -2,7 +2,13 @@
 
 User management system dengan Nuxt.js, PostgreSQL, Prisma, dan Better Auth.
 
-## 🚀 Local Development
+## Flowchart (Simple)
+
+<p>
+  <img src="https://github.com/Dhorq/user-management-system/blob/main/User-Management-App-Simple-Flowchart.png" alt="Flowchart" width="50%"/>
+</p>
+
+## Local Development
 
 ### Setup
 ```bash
@@ -26,7 +32,7 @@ Open: [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 🐳 Docker Setup
+## Docker Setup
 
 ### Run dengan Docker
 ```bash
@@ -53,7 +59,7 @@ docker-compose down -v
 
 ---
 
-## 📝 Tech Stack
+## Tech Stack
 
 - **Framework**: Next.js 15
 - **Database**: PostgreSQL 16
