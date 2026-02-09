@@ -5,7 +5,7 @@ User management system dengan Nuxt.js, NuxtUI, PostgreSQL, Prisma, Better Auth, 
 ## Flowchart (Simple)
 
 <p>
-  <img src="https://github.com/Dhorq/user-management-system/blob/main/User-Management-App-Simple-Flowchart.png" alt="Flowchart" width="50%"/>
+  <img src="https://github.com/Dhorq/user-management-system/blob/main/User-Management-App-Simple-Flowchart.png" alt="Flowchart" width="75%"/>
 </p>
 
 ## Local Development
