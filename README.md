@@ -1,75 +1,67 @@
-# Nuxt Minimal Starter
+# User Management System - Nuxt.js
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+User management system dengan Nuxt.js, PostgreSQL, Prisma, dan Better Auth.
 
-## Setup
+## 🚀 Local Development
 
-Make sure to install dependencies:
-
+### Setup
 ```bash
-# npm
+# Install dependencies
 npm install
 
-# pnpm
-pnpm install
+# Setup .env file
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/user_management_next_db"
+BETTER_AUTH_SECRET=secretkey(generatedaribetterauthdocsaja)
+BETTER_AUTH_URL=http://localhost:3000
 
-# yarn
-yarn install
+# Setup database
+npx prisma generate
+npx prisma db push
 
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
+# Run development server
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+Open: [http://localhost:3000](http://localhost:3000)
 
-Build the application for production:
+---
 
+## 🐳 Docker Setup
+
+### Run dengan Docker
 ```bash
-# npm
-npm run build
+# Setup .env file
+DATABASE_URL="postgresql://postgres:postgres@postgres:5432/user_management_next_db"
+BETTER_AUTH_SECRET=secretkey(generatedaribetterauthdocsaja)
+BETTER_AUTH_URL=http://localhost:3000
 
-# pnpm
-pnpm build
+# Build & run
+docker-compose up --build / --d
 
-# yarn
-yarn build
+# Check logs
+docker-compose logs -f
 
-# bun
-bun run build
+# Stop
+docker-compose down / -v
 ```
 
-Locally preview production build:
-
+### Docker Commands
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+# Stop dan delete data
+docker-compose down -v
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+---
+
+## 📝 Tech Stack
+
+- **Framework**: Next.js 15
+- **Database**: PostgreSQL 16
+- **ORM**: Prisma 7.3
+- **Authentication**: Better Auth 1.4
+- **Styling**: Tailwind CSS 4.1
+- **Validation**: Zod 4.3 (Not yet used mostly)
+- **Runtime**: Node.js 20
+- **Container**: Docker & Docker Compose
+
+---
