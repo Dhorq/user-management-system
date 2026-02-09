@@ -61,13 +61,14 @@ docker-compose down -v
 
 ## Tech Stack
 
-- **Framework**: Next.js 15
-- **Database**: PostgreSQL 16
+- **Framework**: Nuxt.js 4.3
+- **UI Library**: NuxtUI 4.4
+- **Database**: PostgreSQL 8
 - **ORM**: Prisma 7.3
 - **Authentication**: Better Auth 1.4
 - **Styling**: Tailwind CSS 4.1
 - **Validation**: Zod 4.3 (Not yet used mostly)
 - **Runtime**: Node.js 20
-- **Container**: Docker & Docker Compose
+- **Container**: Docker
 
 ---
