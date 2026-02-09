@@ -1,6 +1,6 @@
 # User Management System - Nuxt.js
 
-User management system dengan Nuxt.js, PostgreSQL, Prisma, dan Better Auth.
+User management system dengan Nuxt.js, NuxtUI, PostgreSQL, Prisma, Better Auth, Docker deploy.
 
 ## Flowchart (Simple)
 
