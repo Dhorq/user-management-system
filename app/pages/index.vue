@@ -194,21 +194,31 @@ const changeUserRole = async (user: User, newRole: Role) => {
   }
 };
 
-const deleteUser = (user: User) => {
-  const index = users.value.findIndex((u) => u.id === user.id);
-  if (index !== -1) {
-    users.value.splice(index, 1);
-    const selectedIndex = selected.value.indexOf(user.id);
-    if (selectedIndex !== -1) {
-      selected.value.splice(selectedIndex, 1);
+const deleteUser = async (user: User) => {
+  try {
+    const response = await $fetch(`/api/users/${user.id}/user`, {
+      method: "DELETE",
+    });
+
+    const index = users.value.findIndex((u) => u.id === user.id);
+    if (index !== -1) {
+      users.value.splice(index, 1);
+      const selectedIndex = selected.value.indexOf(user.id);
+      if (selectedIndex !== -1) {
+        selected.value.splice(selectedIndex, 1);
+      }
     }
+
+    toast.add({
+      title: "User Deleted",
+      description: `${user.name} has been removed`,
+      color: "error",
+      icon: "i-heroicons-trash-20-solid",
+    });
+    console.log(response.message);
+  } catch (error) {
+    console.error("Failed to delete user:", error);
   }
-  toast.add({
-    title: "User Deleted",
-    description: `${user.name} has been removed`,
-    color: "error",
-    icon: "i-heroicons-trash-20-solid",
-  });
 };
 
 const isAddUserModalOpen = ref(false);
@@ -234,7 +244,7 @@ const handleUserAdded = (newUser: User) => {
     <div class="min-h-screen w-full">
       <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
         <div class="mb-8">
-          <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
             <UIcon
               name="i-heroicons-building-storefront-20-solid"
               class="w-5 h-5"
@@ -428,7 +438,9 @@ const handleUserAdded = (newUser: User) => {
               <UPagination
                 v-model:page="page"
                 :total="filteredUsers.length"
-                :page-size="pageSize"
+                :items-per-page="pageSize"
+                :sibling-count="1"
+                show-edges
               />
             </div>
           </template>

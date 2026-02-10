@@ -15,7 +15,7 @@ const handleLogout = async () => {
     <UAvatar
       :src="
         session.data?.user?.image ||
-        'https://avatars.githubusercontent.com/u/739984?v=4'
+        'https://avatars.githubusercontent.com/u/98602811?v=4'
       "
       :alt="session.data?.user?.name || 'User'"
       size="sm"
