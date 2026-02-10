@@ -63,7 +63,7 @@ docker-compose down -v
 
 - **Framework**: Nuxt.js 4.3
 - **UI Library**: NuxtUI 4.4
-- **Database**: PostgreSQL 8
+- **Database**: PostgreSQL 17, Docker using 16
 - **ORM**: Prisma 7.3
 - **Authentication**: Better Auth 1.4
 - **Styling**: Tailwind CSS 4.1
